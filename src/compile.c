@@ -4,6 +4,8 @@
 
 pgbf_compile_result
 pgbf_compile(const char* s, size_t len, pgbf_program** program) {
+    // <https://www.hevanet.com/cristofd/brainfuck/brainfuck.html>
+
     // Count of operations seen, used during each pass.
     size_t n = 0;
 
@@ -16,10 +18,13 @@ pgbf_compile(const char* s, size_t len, pgbf_program** program) {
     // Tracks the opened bracket positions in the second pass.
     size_t* stack = NULL;
 
+    // Count of output operations.
+    // Used as a hint to the executor for the output allocation size.
+    int n_output = 0;
+
     Assert(program != NULL);
 
     // Iterate once over the source to count operations and validate brackets.
-    // <https://www.hevanet.com/cristofd/brainfuck/brainfuck.html>
     for (size_t i = 0; i < len; i++) {
         switch (s[i]) {
         case '[':
@@ -37,11 +42,14 @@ pgbf_compile(const char* s, size_t len, pgbf_program** program) {
             n += 1;
             break;
 
+        case '.':
+            n_output += 1;
+            // fallthrough
+
         case '+':
         case '-':
         case '>':
         case '<':
-        case '.':
         case ',':
             n += 1;
             break;
@@ -55,8 +63,9 @@ pgbf_compile(const char* s, size_t len, pgbf_program** program) {
         return PGBF_COMPILE_UNMATCHED_OPEN;
     }
 
-    *program         = palloc(sizeof(pgbf_program) + sizeof(pgbf_op) * n);
-    (*program)->nops = n;
+    *program                = palloc(sizeof(pgbf_program) + sizeof(pgbf_op) * n);
+    (*program)->nops        = n;
+    (*program)->output_hint = n_output;
 
     stack = palloc(sizeof(size_t) * max_depth);
     depth = 0;

@@ -1,6 +1,8 @@
 Checks:
   - -*
   - clang-diagnostic-*
+  - -clang-diagnostic-implicit-fallthrough
+  - -clang-diagnostic-switch-default
   - bugprone-*
   - -bugprone-easily-swappable-parameters
   - cert-*
