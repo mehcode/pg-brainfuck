@@ -1,5 +1,11 @@
 #include "postgres.h"
 #include "miscadmin.h"
+#include "mb/pg_wchar.h"
+
+#if PG_VERSION_NUM >= 160000
+// In Postgres 16+, the VARDATA/VARSIZE macros moved to the `varatt.h` header.
+#include "varatt.h"
+#endif
 
 #include "brainfuck/execute.h"
 #include "brainfuck/program.h"
@@ -85,4 +91,22 @@ pgbf_execute(
             break;
         }
     }
+}
+
+text*
+pgbf_execute_to_text(const pgbf_program* program, const char* input, size_t input_len) {
+    // Allocate space for the output string, reserving VARHDRSZ bytes.
+    StringInfo output = makeStringInfo();
+    enlargeStringInfo(output, program->output_hint + VARHDRSZ);
+    output->len = VARHDRSZ;
+
+    // Execute the compiled program.
+    pgbf_execute(program, input, input_len, output);
+
+    // We need to return TEXT so raise an exception if the program produced
+    // text that is invalid against the database character encoding.
+    pg_verifymbstr(output->data + VARHDRSZ, output->len - VARHDRSZ, false);
+
+    SET_VARSIZE(output->data, output->len);
+    return (text*)output->data;
 }
