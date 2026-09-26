@@ -1,0 +1,4 @@
+If:
+  PathMatch: src/include/.*\.h
+CompileFlags:
+  Add: [-include, postgres.h]
