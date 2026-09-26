@@ -3,7 +3,13 @@ srcdir := $(dir $(firstword $(MAKEFILE_LIST)))
 EXTENSION := brainfuck
 EXTVERSION := $(shell sed -n "s/^default_version *= *'\([^']*\)'.*/\1/p" $(srcdir)$(EXTENSION).control)
 
-PG_CFLAGS = -Wextra -Wshadow -Wformat=2 -Wold-style-definition
+PG_CFLAGS = -std=c11 -Wpedantic \
+            -Wextra -Wshadow -Wformat=2 -Wold-style-definition \
+            -Wconversion -Wsign-conversion -Wswitch-enum \
+            -Wcast-qual -Wstrict-prototypes -Wmissing-declarations -Wundef \
+            -Wwrite-strings -Wredundant-decls -Wbad-function-cast -Wunused-macros \
+            -Wnull-dereference -Walloca -Wshift-overflow=2 -Wformat-overflow=2 \
+            -Wstringop-overflow=4 -Wformat-signedness
 
 # Compiled into PG_MODULE_MAGIC_EXT
 PG_CPPFLAGS = -DPGBF_VERSION='"$(EXTVERSION)"'
