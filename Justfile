@@ -19,7 +19,7 @@ lsp:
 format:
     @make -s format
 
-# Build with warnings as errors, then check formatting and run clang-tidy.
+# Build with warnings as errors and run clang-tidy.
 check: build check-tidy
 
 # Run clang-tidy static analysis, failing on any warning.
