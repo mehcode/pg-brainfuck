@@ -20,7 +20,7 @@ PG_CPPFLAGS += -I$(srcdir)src/include
 PG_CPPFLAGS += -isystem $(includedir_server)
 
 REGRESS = $(patsubst $(srcdir)test/sql/%.sql,%,$(sort $(wildcard $(srcdir)test/sql/*.sql)))
-REGRESS_OPTS += --inputdir=$(srcdir)test
+REGRESS_OPTS += --inputdir=$(srcdir)test --encoding=UTF8 --no-locale --load-extension=$(EXTENSION)
 
 sources := $(sort $(wildcard $(srcdir)src/*.c))
 headers := $(sort $(wildcard $(srcdir)src/include/*/*.h))

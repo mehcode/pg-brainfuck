@@ -1,0 +1,8 @@
+-- https://en.wikipedia.org/wiki/Brainfuck#Hello_World%21
+SELECT brainfuck('', '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.');
+  brainfuck   
+--------------
+ Hello World!+
+ 
+(1 row)
+
