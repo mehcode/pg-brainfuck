@@ -8,11 +8,19 @@ PG_CFLAGS = -Wextra -Wshadow -Wformat=2 -Wold-style-definition
 # Compiled into PG_MODULE_MAGIC_EXT
 PG_CPPFLAGS = -DPGBF_VERSION='"$(EXTVERSION)"'
 
+PG_CPPFLAGS += -I$(srcdir)src/include
+
+# Mark the Postgres headers as system headers.
+PG_CPPFLAGS += -isystem $(includedir_server)
+
 REGRESS = $(patsubst $(srcdir)test/sql/%.sql,%,$(sort $(wildcard $(srcdir)test/sql/*.sql)))
 REGRESS_OPTS += --inputdir=$(srcdir)test
 
+sources := $(sort $(wildcard $(srcdir)src/*.c))
+headers := $(sort $(wildcard $(srcdir)src/include/*/*.h))
+
 MODULE_big = $(EXTENSION)
-OBJS = $(patsubst $(srcdir)%.c,%.o,$(sort $(wildcard $(srcdir)src/*.c)))
+OBJS = $(patsubst $(srcdir)%.c,%.o,$(sources))
 DATA_built = sql/$(EXTENSION)--$(EXTVERSION).sql
 
 builddirs := $(abspath $(sort $(dir $(OBJS) $(DATA_built))))
@@ -31,6 +39,9 @@ $(DATA_built): sql/$(EXTENSION).sql
 # Rebuild when the version changes
 $(OBJS) $(OBJS:.o=.bc): $(EXTENSION).control
 
+# Rebuild when headers change
+$(OBJS) $(OBJS:.o=.bc): $(headers)
+
 # PGXS doesn't create output subdirectories in a VPATH build.
 $(OBJS) $(OBJS:.o=.bc) $(DATA_built): | $(builddirs)
 $(builddirs):
@@ -44,7 +55,7 @@ compile_commands.json: $(firstword $(MAKEFILE_LIST)) $(srcdir)$(EXTENSION).contr
 	@bear -- $(MAKE) -B -f $(firstword $(MAKEFILE_LIST)) all with_llvm=no
 
 .PHONY: format # Format .c and .h files to project standard.
-format: $(wildcard $(srcdir)src/*.[ch] $(srcdir)src/*/*.[ch])
+format: $(sources) $(headers)
 	@clang-format --style=file:$(srcdir).clang-format -i $^
 
 .PHONY: tidy # Run clang-tidy static analysis (requires compile_commands.json).
@@ -52,4 +63,4 @@ tidy: compile_commands.json
 	@clang-tidy -p . --quiet --warnings-as-errors='*' \
 		--extra-arg=-DUSE_ASSERT_CHECKING \
 		--extra-arg=-Wno-unknown-warning-option \
-		$(wildcard $(srcdir)src/*.c)
+		$(sources)

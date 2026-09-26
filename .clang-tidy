@@ -14,7 +14,7 @@ Checks:
   - readability-redundant-declaration
   - readability-redundant-preprocessor
 
-HeaderFilterRegex: '(^|/)src/include/[^/]+\.h$'
+HeaderFilterRegex: '(^|/)src/include/.+\.h$'
 
 CheckOptions:
   bugprone-assert-side-effect.AssertMacros: Assert,AssertArg,AssertState
