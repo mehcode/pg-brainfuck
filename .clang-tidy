@@ -1,20 +1,39 @@
 Checks:
   - -*
+  - clang-diagnostic-*
   - bugprone-*
   - -bugprone-easily-swappable-parameters
+  - cert-*
   - clang-analyzer-*
   - -clang-analyzer-optin.performance.Padding
   - -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+  - cppcoreguidelines-init-variables
   - misc-*
   - -misc-include-cleaner
   - -misc-no-recursion
   - -misc-unused-parameters
-  - readability-duplicate-include
-  - readability-inconsistent-declaration-parameter-name
-  - readability-redundant-declaration
-  - readability-redundant-preprocessor
+  - readability-*
+  - -readability-identifier-length
+  - -readability-math-missing-parentheses
 
 HeaderFilterRegex: '(^|/)src/include/.+\.h$'
 
+ExtraArgs:
+  - -Weverything
+  - -Wno-unsafe-buffer-usage
+  - -Wno-implicit-void-ptr-cast
+  - -Wno-padded
+
 CheckOptions:
   bugprone-assert-side-effect.AssertMacros: Assert,AssertArg,AssertState
+  readability-identifier-naming.GlobalFunctionCase: lower_case
+  readability-identifier-naming.GlobalFunctionPrefix: pgbf_
+  readability-identifier-naming.TypedefCase: lower_case
+  readability-identifier-naming.TypedefPrefix: pgbf_
+  readability-identifier-naming.StructCase: lower_case
+  readability-identifier-naming.StructPrefix: pgbf_
+  readability-identifier-naming.EnumCase: lower_case
+  readability-identifier-naming.EnumPrefix: pgbf_
+  readability-identifier-naming.EnumConstantCase: UPPER_CASE
+  readability-identifier-naming.EnumConstantPrefix: PGBF_
+  readability-function-cognitive-complexity.IgnoreMacros: true
