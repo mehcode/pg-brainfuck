@@ -10,8 +10,13 @@
  */
 #define PGBF_DATA_SIZE 30000
 
-StringInfo
-pgbf_execute(const pgbf_program* program, const char* input, size_t input_len) {
+void
+pgbf_execute(
+    const pgbf_program* program,
+    const char* input,
+    size_t input_len,
+    StringInfo output
+) {
     // <https://www.hevanet.com/cristofd/brainfuck/brainfuck.html>
 
     // The data table that is accessed by the program.
@@ -22,8 +27,6 @@ pgbf_execute(const pgbf_program* program, const char* input, size_t input_len) {
 
     // The index into the input string.
     size_t input_i = 0;
-
-    StringInfo output = makeStringInfoExt(program->output_hint + 1);
 
     for (size_t op_i = 0; op_i < program->nops; op_i++) {
         const pgbf_op* op = &program->ops[op_i];
@@ -82,6 +85,4 @@ pgbf_execute(const pgbf_program* program, const char* input, size_t input_len) {
             break;
         }
     }
-
-    return output;
 }
