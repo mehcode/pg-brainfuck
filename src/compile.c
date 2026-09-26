@@ -45,7 +45,8 @@ pgbf_compile(const char* s, size_t len) {
 
         case '.':
             n_output += 1;
-            // fallthrough
+            n += 1;
+            break;
 
         case '+':
         case '-':
