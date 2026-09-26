@@ -1,0 +1,44 @@
+BasedOnStyle: LLVM
+ColumnLimit: 88
+IndentWidth: 4
+TabWidth: 4
+AlignArrayOfStructures: Left
+AlignConsecutiveAssignments:
+  Enabled: true
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Always
+AllowShortFunctionsOnASingleLine: Inline
+BinPackArguments: false
+BinPackParameters: OnePerLine
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
+BreakAfterReturnType: TopLevel
+BreakBeforeCloseBracketBracedList: true
+BreakBeforeCloseBracketFunction: true
+BreakBeforeCloseBracketIf: true
+Cpp11BracedListStyle: Block
+InsertBraces: true
+InsertNewlineAtEOF: true
+PenaltyReturnTypeOnItsOwnLine: 200
+PointerAlignment: Left
+ForEachMacros:
+  - foreach
+  - for_each_from
+  - for_each_cell
+  - forboth
+  - for_both_cell
+  - forthree
+  - forfour
+  - forfive
+  - dlist_foreach
+  - dlist_foreach_modify
+  - dlist_reverse_foreach
+  - slist_foreach
+  - slist_foreach_modify
+IncludeCategories:
+  - Regex: '^"postgres\.h"$'
+    Priority: -1
+  - Regex: "^<"
+    Priority: 2
+  - Regex: ".*"
+    Priority: 1

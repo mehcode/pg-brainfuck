@@ -1,0 +1,5 @@
+# Brainfuck extension
+comment = 'A Brainfuck procedural language and FDW'
+default_version = '0.1.0'
+module_pathname = 'brainfuck'
+relocatable = true

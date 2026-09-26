@@ -1,0 +1,55 @@
+srcdir := $(dir $(firstword $(MAKEFILE_LIST)))
+
+EXTENSION := brainfuck
+EXTVERSION := $(shell sed -n "s/^default_version *= *'\([^']*\)'.*/\1/p" $(srcdir)$(EXTENSION).control)
+
+PG_CFLAGS = -Wextra -Wshadow -Wformat=2 -Wold-style-definition
+
+# Compiled into PG_MODULE_MAGIC_EXT
+PG_CPPFLAGS = -DPGBF_VERSION='"$(EXTVERSION)"'
+
+REGRESS = $(patsubst $(srcdir)test/sql/%.sql,%,$(sort $(wildcard $(srcdir)test/sql/*.sql)))
+REGRESS_OPTS += --inputdir=$(srcdir)test
+
+MODULE_big = $(EXTENSION)
+OBJS = $(patsubst $(srcdir)%.c,%.o,$(sort $(wildcard $(srcdir)src/*.c)))
+DATA_built = sql/$(EXTENSION)--$(EXTVERSION).sql
+
+builddirs := $(abspath $(sort $(dir $(OBJS) $(DATA_built))))
+
+PG_CONFIG ?= pg_config
+
+# Clean up generated files.
+EXTRA_CLEAN = compile_commands.json
+
+PGXS := $(shell $(PG_CONFIG) --pgxs)
+include $(PGXS)
+
+$(DATA_built): sql/$(EXTENSION).sql
+	cp $< $@
+
+# Rebuild when the version changes
+$(OBJS) $(OBJS:.o=.bc): $(EXTENSION).control
+
+# PGXS doesn't create output subdirectories in a VPATH build.
+$(OBJS) $(OBJS:.o=.bc) $(DATA_built): | $(builddirs)
+$(builddirs):
+	@mkdir -p $@
+
+.PHONY: lsp # Generate compile_commands.json for IDE/clangd support.
+lsp: compile_commands.json
+
+# Requires https://github.com/rizsotto/Bear.
+compile_commands.json: $(firstword $(MAKEFILE_LIST)) $(srcdir)$(EXTENSION).control $(srcdir)src
+	@bear -- $(MAKE) -B -f $(firstword $(MAKEFILE_LIST)) all with_llvm=no
+
+.PHONY: format # Format .c and .h files to project standard.
+format: $(wildcard $(srcdir)src/*.[ch] $(srcdir)src/*/*.[ch])
+	@clang-format --style=file:$(srcdir).clang-format -i $^
+
+.PHONY: tidy # Run clang-tidy static analysis (requires compile_commands.json).
+tidy: compile_commands.json
+	@clang-tidy -p . --quiet --warnings-as-errors='*' \
+		--extra-arg=-DUSE_ASSERT_CHECKING \
+		--extra-arg=-Wno-unknown-warning-option \
+		$(wildcard $(srcdir)src/*.c)

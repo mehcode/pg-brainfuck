@@ -1,0 +1,11 @@
+# build
+*.o
+*.so
+*.bc
+/build/
+/sql/brainfuck--*.sql
+!/sql/brainfuck--*--*.sql
+
+# clangd
+compile_commands.json
+.cache/

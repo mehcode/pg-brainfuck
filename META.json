@@ -1,0 +1,38 @@
+{
+  "name": "brainfuck",
+  "abstract": "A Brainfuck procedural language and FDW",
+  "description": "Provides the procedural language plbrainfuck, whose function bodies are Brainfuck, and the FDW brainfuck_fdw, whose foreign tables return a Brainfuck program's output one line per row.",
+  "version": "0.1.0",
+  "maintainer": ["Ryan Leckey <leckey.ryan@gmail.com>"],
+  "license": "postgresql",
+  "provides": {
+    "brainfuck": {
+      "abstract": "A Brainfuck procedural language and FDW",
+      "file": "sql/brainfuck.sql",
+      "version": "0.1.0"
+    }
+  },
+  "prereqs": {
+    "runtime": {
+      "requires": {
+        "PostgreSQL": "14.0.0"
+      }
+    }
+  },
+  "resources": {
+    "homepage": "https://github.com/mehcode/brainfuck",
+    "bugtracker": {
+      "web": "https://github.com/mehcode/brainfuck/issues/"
+    },
+    "repository": {
+      "url": "https://github.com/mehcode/brainfuck.git",
+      "web": "https://github.com/mehcode/brainfuck",
+      "type": "git"
+    }
+  },
+  "meta-spec": {
+    "version": "1.0.0",
+    "url": "https://pgxn.org/meta/spec.txt"
+  },
+  "tags": ["PL", "Brainfuck", "plbrainfuck", "fdw", "foreign data wrapper"]
+}
