@@ -1,0 +1,6 @@
+-- https://www.hevanet.com/cristofd/brainfuck/tests.b
+
+-- Newline passes through as 10 both ways, and EOF sets the cell to 0 ("LB").
+SELECT brainfuck(E'\n', $$
+>,>+++++++++,>+++++++++++[<++++++<++++++<+>>>-]<<.>.<<-.>.>.<<.
+$$);

@@ -1,0 +1,6 @@
+-- https://www.hevanet.com/cristofd/brainfuck/tests.b
+-- Should give error message "unmatched [" and not give any output.
+SELECT brainfuck('', $$
++++++[>+++++++>++<<-]>.>.[
+$$);
+ERROR:  unmatched "["
