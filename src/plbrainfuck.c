@@ -128,5 +128,5 @@ plbrainfuck_call_handler(PG_FUNCTION_ARGS) {
     }
 
     // Execute the Brainfuck program and return its output as TEXT.
-    PG_RETURN_TEXT_P(pgbf_execute_to_text(program, input, input_len));
+    PG_RETURN_TEXT_P(pgbf_execute(program, input, input_len));
 }

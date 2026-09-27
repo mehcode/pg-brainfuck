@@ -28,6 +28,6 @@ brainfuck(PG_FUNCTION_ARGS) {
 
     // Execute the Brainfuck program and return its output as TEXT.
     PG_RETURN_TEXT_P(
-        pgbf_execute_to_text(program, VARDATA_ANY(input), VARSIZE_ANY_EXHDR(input))
+        pgbf_execute(program, VARDATA_ANY(input), VARSIZE_ANY_EXHDR(input))
     );
 }
