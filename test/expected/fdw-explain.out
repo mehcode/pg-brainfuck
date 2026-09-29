@@ -1,0 +1,27 @@
+CREATE SERVER fdw_explain FOREIGN DATA WRAPPER brainfuck_fdw;
+-- Prints "A" and "B" on their own lines.
+CREATE FOREIGN TABLE ab (line text)
+    SERVER fdw_explain
+    OPTIONS (program '++++++++[>++++++++<-]>+.<++++++++++.>+.<.');
+EXPLAIN (COSTS OFF) SELECT * FROM ab;
+     QUERY PLAN     
+--------------------
+ Foreign Scan on ab
+(1 row)
+
+-- The machine can't filter, so WHERE clauses stay in the plan.
+EXPLAIN (COSTS OFF) SELECT * FROM ab WHERE line <> 'A';
+          QUERY PLAN           
+-------------------------------
+ Foreign Scan on ab
+   Filter: (line <> 'A'::text)
+(2 rows)
+
+-- A table has a single `line text` column.
+CREATE FOREIGN TABLE int_line (line int) SERVER fdw_explain OPTIONS (program '+');
+EXPLAIN (COSTS OFF) SELECT * FROM int_line;
+ERROR:  column "line" of foreign table "int_line" must be of type text
+DROP SERVER fdw_explain CASCADE;
+NOTICE:  drop cascades to 2 other objects
+DETAIL:  drop cascades to foreign table ab
+drop cascades to foreign table int_line
