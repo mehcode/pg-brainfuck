@@ -11,6 +11,9 @@ CREATE FOREIGN TABLE fib (line text) SERVER fdw_fib OPTIONS (program $$
 ]
 $$);
 
+SELECT set_config(name, 'on', false) FROM pg_settings
+    WHERE name IN ('debug_parallel_query', 'force_parallel_mode');
+
 -- The 4th number.
 
 EXPLAIN (COSTS OFF) SELECT line FROM fib LIMIT 1 OFFSET 3;

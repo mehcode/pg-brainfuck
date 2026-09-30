@@ -8,13 +8,23 @@ CREATE FOREIGN TABLE fib (line text) SERVER fdw_fib OPTIONS (program $$
     ]<<<
 ]
 $$);
+SELECT set_config(name, 'on', false) FROM pg_settings
+    WHERE name IN ('debug_parallel_query', 'force_parallel_mode');
+ set_config 
+------------
+ on
+(1 row)
+
 -- The 4th number.
 EXPLAIN (COSTS OFF) SELECT line FROM fib LIMIT 1 OFFSET 3;
-        QUERY PLAN         
----------------------------
- Limit
-   ->  Foreign Scan on fib
-(2 rows)
+           QUERY PLAN            
+---------------------------------
+ Gather
+   Workers Planned: 1
+   Single Copy: true
+   ->  Limit
+         ->  Foreign Scan on fib
+(5 rows)
 
 SELECT line FROM fib LIMIT 1 OFFSET 3;
  line 
@@ -24,12 +34,15 @@ SELECT line FROM fib LIMIT 1 OFFSET 3;
 
 -- The first number with at least 200 digits.
 EXPLAIN (COSTS OFF) SELECT line FROM fib WHERE length(line) >= 200 LIMIT 1;
-              QUERY PLAN               
----------------------------------------
- Limit
-   ->  Foreign Scan on fib
-         Filter: (length(line) >= 200)
-(3 rows)
+                 QUERY PLAN                  
+---------------------------------------------
+ Gather
+   Workers Planned: 1
+   Single Copy: true
+   ->  Limit
+         ->  Foreign Scan on fib
+               Filter: (length(line) >= 200)
+(6 rows)
 
 SELECT line FROM fib WHERE length(line) >= 200 LIMIT 1;
                                                                                                    line                                                                                                   

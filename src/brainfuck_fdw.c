@@ -456,19 +456,34 @@ brainfuck_fdw_end_foreign_scan(ForeignScanState* node pg_attribute_unused()) {
     // for us and we don't allocate anything else.
 }
 
+/**
+ * Lets the scan run inside a parallel worker.
+ */
+static bool
+brainfuck_fdw_is_foreign_scan_parallel_safe(
+    PlannerInfo* root pg_attribute_unused(),
+    RelOptInfo* rel pg_attribute_unused(),
+    RangeTblEntry* rte pg_attribute_unused()
+) {
+    // Running the program depends on no shared state outside of its
+    // own query-local machine state.
+    return true;
+}
+
 PG_FUNCTION_INFO_V1(brainfuck_fdw_handler);
 
 Datum
 brainfuck_fdw_handler(PG_FUNCTION_ARGS) {
     FdwRoutine* routine = makeNode(FdwRoutine);
 
-    routine->GetForeignRelSize  = brainfuck_fdw_get_foreign_rel_size;
-    routine->GetForeignPaths    = brainfuck_fdw_get_foreign_paths;
-    routine->GetForeignPlan     = brainfuck_fdw_get_foreign_plan;
-    routine->BeginForeignScan   = brainfuck_fdw_begin_foreign_scan;
-    routine->EndForeignScan     = brainfuck_fdw_end_foreign_scan;
-    routine->IterateForeignScan = brainfuck_fdw_iterate_foreign_scan;
-    routine->ReScanForeignScan  = brainfuck_fdw_rescan_foreign_scan;
+    routine->GetForeignRelSize         = brainfuck_fdw_get_foreign_rel_size;
+    routine->GetForeignPaths           = brainfuck_fdw_get_foreign_paths;
+    routine->GetForeignPlan            = brainfuck_fdw_get_foreign_plan;
+    routine->BeginForeignScan          = brainfuck_fdw_begin_foreign_scan;
+    routine->EndForeignScan            = brainfuck_fdw_end_foreign_scan;
+    routine->IterateForeignScan        = brainfuck_fdw_iterate_foreign_scan;
+    routine->ReScanForeignScan         = brainfuck_fdw_rescan_foreign_scan;
+    routine->IsForeignScanParallelSafe = brainfuck_fdw_is_foreign_scan_parallel_safe;
 
     PG_RETURN_POINTER(routine);
 }
