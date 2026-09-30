@@ -8,15 +8,28 @@ CREATE FOREIGN TABLE fib (line text) SERVER fdw_fib OPTIONS (program $$
     ]<<<
 ]
 $$);
+SELECT set_config(name, 'on', false) FROM pg_settings
+    WHERE name IN ('debug_parallel_query', 'force_parallel_mode');
+ set_config 
+------------
+ on
+(1 row)
+
 -- The 4th number.
 EXPLAIN (ANALYZE, VERBOSE, COSTS OFF, TIMING OFF, SUMMARY OFF, BUFFERS OFF) SELECT line FROM fib LIMIT 1 OFFSET 3;
-                          QUERY PLAN                          
---------------------------------------------------------------
- Limit (actual rows=1.00 loops=1)
+                           QUERY PLAN                           
+----------------------------------------------------------------
+ Gather (actual rows=1 loops=1)
    Output: line
-   ->  Foreign Scan on public.fib (actual rows=4.00 loops=1)
+   Workers Planned: 1
+   Workers Launched: 1
+   Single Copy: true
+   ->  Limit (actual rows=1 loops=1)
          Output: line
-         Program: 
+         Worker 0:  actual rows=1 loops=1
+         ->  Foreign Scan on public.fib (actual rows=4 loops=1)
+               Output: line
+               Program: 
  >++++++++++>+>+[
      [+++++[>++++++++<-]>.<++++++[>--------<-]+<<<]>.>>[
          [-]<[>+<-]>>[<<+>+>-]<[>+<-[>+<-[>+<-[>+<-[>+<-[>+<-
@@ -24,8 +37,9 @@ EXPLAIN (ANALYZE, VERBOSE, COSTS OFF, TIMING OFF, SUMMARY OFF, BUFFERS OFF) SELE
      ]<<<
  ]
  
-         Steps: 804
-(13 rows)
+               Steps: 0
+               Worker 0:  actual rows=4 loops=1
+(20 rows)
 
 SELECT line FROM fib LIMIT 1 OFFSET 3;
  line 
@@ -35,15 +49,21 @@ SELECT line FROM fib LIMIT 1 OFFSET 3;
 
 -- The first number with at least 200 digits.
 EXPLAIN (ANALYZE, VERBOSE, COSTS OFF, TIMING OFF, SUMMARY OFF, BUFFERS OFF) SELECT line FROM fib WHERE length(line) >= 200 LIMIT 1;
-                          QUERY PLAN                          
---------------------------------------------------------------
- Limit (actual rows=1.00 loops=1)
+                           QUERY PLAN                           
+----------------------------------------------------------------
+ Gather (actual rows=1 loops=1)
    Output: line
-   ->  Foreign Scan on public.fib (actual rows=1.00 loops=1)
+   Workers Planned: 1
+   Workers Launched: 1
+   Single Copy: true
+   ->  Limit (actual rows=1 loops=1)
          Output: line
-         Filter: (length(fib.line) >= 200)
-         Rows Removed by Filter: 954
-         Program: 
+         Worker 0:  actual rows=1 loops=1
+         ->  Foreign Scan on public.fib (actual rows=1 loops=1)
+               Output: line
+               Filter: (length(fib.line) >= 200)
+               Rows Removed by Filter: 954
+               Program: 
  >++++++++++>+>+[
      [+++++[>++++++++<-]>.<++++++[>--------<-]+<<<]>.>>[
          [-]<[>+<-]>>[<<+>+>-]<[>+<-[>+<-[>+<-[>+<-[>+<-[>+<-
@@ -51,8 +71,9 @@ EXPLAIN (ANALYZE, VERBOSE, COSTS OFF, TIMING OFF, SUMMARY OFF, BUFFERS OFF) SELE
      ]<<<
  ]
  
-         Steps: 29419629
-(15 rows)
+               Steps: 0
+               Worker 0:  actual rows=1 loops=1
+(22 rows)
 
 SELECT line FROM fib WHERE length(line) >= 200 LIMIT 1;
                                                                                                    line                                                                                                   

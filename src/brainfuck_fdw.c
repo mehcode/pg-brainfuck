@@ -26,6 +26,14 @@
 #include "utils/guc.h"
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
+#include <nodes/plannodes.h>
+
+#if PG_VERSION_NUM >= 180000
+#include "commands/explain_format.h"
+#include "commands/explain_state.h"
+#else
+#include "commands/explain.h"
+#endif
 
 #if PG_VERSION_NUM >= 160000
 #include "varatt.h"
@@ -470,6 +478,25 @@ brainfuck_fdw_is_foreign_scan_parallel_safe(
     return true;
 }
 
+/**
+ * Adds to the EXPLAIN output.
+ * We count and export the number of STEPs taken by the machine.
+ */
+static void
+brainfuck_fdw_explain_foreign_scan(ForeignScanState* node, ExplainState* es) {
+    if (es->verbose) {
+        // Only add the program source if the user requested verbose output.
+        const ForeignScan* plan = castNode(ForeignScan, node->ss.ps.plan);
+        ExplainPropertyText("Program", strVal(linitial(plan->fdw_private)), es);
+    }
+
+    if (es->analyze) {
+        // ANALYZE runs the execute, that means `BeginForeignScan` ran in full
+        const brainfuck_fdw_execute_state* state = node->fdw_state;
+        ExplainPropertyUInteger("Steps", NULL, state->machine.steps, es);
+    }
+}
+
 PG_FUNCTION_INFO_V1(brainfuck_fdw_handler);
 
 Datum
@@ -484,6 +511,7 @@ brainfuck_fdw_handler(PG_FUNCTION_ARGS) {
     routine->IterateForeignScan        = brainfuck_fdw_iterate_foreign_scan;
     routine->ReScanForeignScan         = brainfuck_fdw_rescan_foreign_scan;
     routine->IsForeignScanParallelSafe = brainfuck_fdw_is_foreign_scan_parallel_safe;
+    routine->ExplainForeignScan        = brainfuck_fdw_explain_foreign_scan;
 
     PG_RETURN_POINTER(routine);
 }

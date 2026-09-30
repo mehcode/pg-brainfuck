@@ -105,6 +105,7 @@ pgbf_machine_step(const pgbf_program* program, pgbf_machine* m, StringInfo outpu
     }
 
     m->op += 1;
+    m->steps += 1;
 
     return m->op < program->nops;
 }

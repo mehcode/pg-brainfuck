@@ -5,6 +5,10 @@ CREATE FOREIGN TABLE ab (line text)
     SERVER fdw_explain
     OPTIONS (program '++++++++[>++++++++<-]>+.<++++++++++.>+.<.');
 
+
+SELECT set_config(name, 'on', false) FROM pg_settings
+    WHERE name IN ('debug_parallel_query', 'force_parallel_mode');
+
 EXPLAIN (COSTS OFF) SELECT * FROM ab;
 
 -- The machine can't filter, so WHERE clauses stay in the plan.

@@ -3,19 +3,32 @@ CREATE SERVER fdw_explain FOREIGN DATA WRAPPER brainfuck_fdw;
 CREATE FOREIGN TABLE ab (line text)
     SERVER fdw_explain
     OPTIONS (program '++++++++[>++++++++<-]>+.<++++++++++.>+.<.');
-EXPLAIN (COSTS OFF) SELECT * FROM ab;
-     QUERY PLAN     
---------------------
- Foreign Scan on ab
+SELECT set_config(name, 'on', false) FROM pg_settings
+    WHERE name IN ('debug_parallel_query', 'force_parallel_mode');
+ set_config 
+------------
+ on
 (1 row)
+
+EXPLAIN (COSTS OFF) SELECT * FROM ab;
+        QUERY PLAN        
+--------------------------
+ Gather
+   Workers Planned: 1
+   Single Copy: true
+   ->  Foreign Scan on ab
+(4 rows)
 
 -- The machine can't filter, so WHERE clauses stay in the plan.
 EXPLAIN (COSTS OFF) SELECT * FROM ab WHERE line <> 'A';
-          QUERY PLAN           
--------------------------------
- Foreign Scan on ab
-   Filter: (line <> 'A'::text)
-(2 rows)
+             QUERY PLAN              
+-------------------------------------
+ Gather
+   Workers Planned: 1
+   Single Copy: true
+   ->  Foreign Scan on ab
+         Filter: (line <> 'A'::text)
+(5 rows)
 
 -- A table has a single `line text` column.
 CREATE FOREIGN TABLE int_line (line int) SERVER fdw_explain OPTIONS (program '+');

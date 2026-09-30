@@ -26,6 +26,9 @@ typedef struct pgbf_machine {
 
     /** Pointer into working memory, wrapping around as needed. */
     size_t ptr;
+
+    /** Number of steps taken by the machine. */
+    uint64_t steps;
 } pgbf_machine;
 
 /** Initializes a new machine to execute a Brainfuck program. */
