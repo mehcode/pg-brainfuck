@@ -1,0 +1,41 @@
+CREATE SERVER fdw_fib FOREIGN DATA WRAPPER brainfuck_fdw;
+-- Prints the Fibonacci numbers from 0, one per line, forever.
+CREATE FOREIGN TABLE fib (line text) SERVER fdw_fib OPTIONS (program $$
+>++++++++++>+>+[
+    [+++++[>++++++++<-]>.<++++++[>--------<-]+<<<]>.>>[
+        [-]<[>+<-]>>[<<+>+>-]<[>+<-[>+<-[>+<-[>+<-[>+<-[>+<-
+            [>+<-[>+<-[>+<-[>[-]>+>+<<<-[>+<-]]]]]]]]]]]+>>>
+    ]<<<
+]
+$$);
+-- The 4th number.
+EXPLAIN (COSTS OFF) SELECT line FROM fib LIMIT 1 OFFSET 3;
+        QUERY PLAN         
+---------------------------
+ Limit
+   ->  Foreign Scan on fib
+(2 rows)
+
+SELECT line FROM fib LIMIT 1 OFFSET 3;
+ line 
+------
+ 2
+(1 row)
+
+-- The first number with at least 200 digits.
+EXPLAIN (COSTS OFF) SELECT line FROM fib WHERE length(line) >= 200 LIMIT 1;
+              QUERY PLAN               
+---------------------------------------
+ Limit
+   ->  Foreign Scan on fib
+         Filter: (length(line) >= 200)
+(3 rows)
+
+SELECT line FROM fib WHERE length(line) >= 200 LIMIT 1;
+                                                                                                   line                                                                                                   
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 10585802725247397713156061118182609163458497640206451131709690692246059419663254768654192151365247897971348454997593808373144063645018099899477074524185108681913644791617015762928968316457818468660472
+(1 row)
+
+DROP SERVER fdw_fib CASCADE;
+NOTICE:  drop cascades to foreign table fib
