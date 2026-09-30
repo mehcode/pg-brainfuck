@@ -18,6 +18,7 @@
 #include "nodes/nodes.h"
 #include "nodes/parsenodes.h"
 #include "nodes/pg_list.h"
+#include "nodes/plannodes.h"
 #include "nodes/value.h"
 #include "optimizer/optimizer.h"
 #include "optimizer/pathnode.h"
@@ -26,7 +27,6 @@
 #include "utils/guc.h"
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
-#include <nodes/plannodes.h>
 
 #if PG_VERSION_NUM >= 180000
 #include "commands/explain_format.h"
