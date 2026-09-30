@@ -1,5 +1,6 @@
 CREATE SERVER fdw_fib FOREIGN DATA WRAPPER brainfuck_fdw;
 -- Prints the Fibonacci numbers from 0, one per line, forever.
+-- https://www.hevanet.com/cristofd/brainfuck/fib.b
 CREATE FOREIGN TABLE fib (line text) SERVER fdw_fib OPTIONS (program $$
 >++++++++++>+>+[
     [+++++[>++++++++<-]>.<++++++[>--------<-]+<<<]>.>>[
