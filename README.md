@@ -42,7 +42,7 @@ $$); -- E'Hello World!\n'
 
 ### Language
 
-Define your own SQL functions in Brianfuck.
+Define your own SQL functions in Brainfuck.
 
 ```sql
 -- https://www.hevanet.com/cristofd/brainfuck/rot13.b
