@@ -20,13 +20,13 @@
     }
   },
   "resources": {
-    "homepage": "https://github.com/mehcode/brainfuck",
+    "homepage": "https://github.com/mehcode/pg-brainfuck",
     "bugtracker": {
-      "web": "https://github.com/mehcode/brainfuck/issues/"
+      "web": "https://github.com/mehcode/pg-brainfuck/issues/"
     },
     "repository": {
-      "url": "https://github.com/mehcode/brainfuck.git",
-      "web": "https://github.com/mehcode/brainfuck",
+      "url": "https://github.com/mehcode/pg-brainfuck.git",
+      "web": "https://github.com/mehcode/pg-brainfuck",
       "type": "git"
     }
   },
