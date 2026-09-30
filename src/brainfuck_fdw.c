@@ -1,5 +1,6 @@
 // NOLINTBEGIN(readability-identifier-naming)
 #include "postgres.h"
+#include "access/attnum.h"
 #include "access/reloptions.h"
 #include "access/table.h"
 #include "catalog/pg_attribute.h"
@@ -7,9 +8,12 @@
 #include "catalog/pg_type.h"
 #include "commands/defrem.h"
 #include "executor/executor.h"
+#include "executor/tuptable.h"
 #include "fmgr.h"
 #include "foreign/fdwapi.h"
 #include "foreign/foreign.h"
+#include "lib/stringinfo.h"
+#include "mb/pg_wchar.h"
 #include "nodes/execnodes.h"
 #include "nodes/nodes.h"
 #include "nodes/parsenodes.h"
@@ -20,7 +24,12 @@
 #include "optimizer/planmain.h"
 #include "optimizer/restrictinfo.h"
 #include "utils/guc.h"
+#include "utils/lsyscache.h"
 #include "utils/rel.h"
+
+#if PG_VERSION_NUM >= 160000
+#include "varatt.h"
+#endif
 
 #include "brainfuck/compile.h"
 #include "brainfuck/machine.h"
@@ -32,6 +41,12 @@ typedef struct brainfuck_fdw_plan_state {
 typedef struct brainfuck_fdw_execute_state {
     const pgbf_program* program;
     pgbf_machine machine;
+
+    /** Output buffer of the machine, reused for each "line" of output.  */
+    StringInfoData line;
+
+    /** What `attnum` to use to push "line" */
+    AttrNumber line_attnum;
 } brainfuck_fdw_execute_state;
 
 typedef enum brainfuck_fdw_option {
@@ -357,7 +372,79 @@ brainfuck_fdw_begin_foreign_scan(ForeignScanState* node, int eflags) {
     state->program = pgbf_compile(source, strlen(source));
     state->machine = pgbf_machine_alloc(NULL, 0);
 
+    // IterateForeignScan reuses one buffer for every line of output
+    // Allocated in the per-query memory context so it lives past the iteration
+    initStringInfo(&state->line);
+
+    // Find the `attnum` of the "line" column
+    state->line_attnum =
+        get_attnum(RelationGetRelid(node->ss.ss_currentRelation), "line");
+
+    Assert(state->line_attnum != InvalidAttrNumber);
+
     node->fdw_state = state;
+}
+
+/**
+ * Run the brainfuck machine and capture one row ("line") of output.
+ */
+static TupleTableSlot*
+brainfuck_fdw_iterate_foreign_scan(ForeignScanState* node) {
+    brainfuck_fdw_execute_state* state = node->fdw_state;
+
+    // Docs say the ScanTupleSlot should be used to return the tuple
+    TupleTableSlot* slot = node->ss.ss_ScanTupleSlot;
+    ExecClearTuple(slot);
+
+    // Prepare the line buffer to receive output.
+    resetStringInfo(&state->line);
+    appendStringInfoSpaces(&state->line, VARHDRSZ);
+
+    // Resume machine execution where the last row left off.
+    // Run until the machine terminates or prints a newline.
+    bool has_newline =
+        pgbf_machine_run_until(state->program, &state->machine, &state->line, '\n');
+
+    int len = state->line.len - VARHDRSZ;
+    if (has_newline) {
+        // We received a newline-terminated line of output.
+        // Trim the newline before returning the line.
+        len -= 1;
+    } else if (len == 0) {
+        // The machine terminated without producing any more output.
+        // Calling `pgbf_machine_run_until` on a terminated machine will always return
+        // `false` immediately.
+        return NULL;
+    }
+
+    // Check that the produced output is valid according to the database encoding.
+    // Raises an error if the output is invalid.
+    pg_verifymbstr(state->line.data + VARHDRSZ, len, false);
+
+    // Fill in the variable-size header
+    text* line = (text*)state->line.data;
+    SET_VARSIZE(line, VARHDRSZ + len);
+
+    // Initialize the full slot to `null`.
+    memset(slot->tts_isnull, true, slot->tts_tupleDescriptor->natts * sizeof(bool));
+
+    // Then fill in our "line" column.
+    int index               = AttrNumberGetAttrOffset(state->line_attnum);
+    slot->tts_isnull[index] = false;
+    slot->tts_values[index] = PointerGetDatum(line);
+
+    return ExecStoreVirtualTuple(slot);
+}
+
+/**
+ * Restart the scan from the beginning.
+ */
+static void
+brainfuck_fdw_rescan_foreign_scan(ForeignScanState* node) {
+    brainfuck_fdw_execute_state* state = node->fdw_state;
+
+    // Compiled program doesn't change but we need to reset the machine state.
+    pgbf_machine_clear(&state->machine);
 }
 
 /**
@@ -375,11 +462,13 @@ Datum
 brainfuck_fdw_handler(PG_FUNCTION_ARGS) {
     FdwRoutine* routine = makeNode(FdwRoutine);
 
-    routine->GetForeignRelSize = brainfuck_fdw_get_foreign_rel_size;
-    routine->GetForeignPaths   = brainfuck_fdw_get_foreign_paths;
-    routine->GetForeignPlan    = brainfuck_fdw_get_foreign_plan;
-    routine->BeginForeignScan  = brainfuck_fdw_begin_foreign_scan;
-    routine->EndForeignScan    = brainfuck_fdw_end_foreign_scan;
+    routine->GetForeignRelSize  = brainfuck_fdw_get_foreign_rel_size;
+    routine->GetForeignPaths    = brainfuck_fdw_get_foreign_paths;
+    routine->GetForeignPlan     = brainfuck_fdw_get_foreign_plan;
+    routine->BeginForeignScan   = brainfuck_fdw_begin_foreign_scan;
+    routine->EndForeignScan     = brainfuck_fdw_end_foreign_scan;
+    routine->IterateForeignScan = brainfuck_fdw_iterate_foreign_scan;
+    routine->ReScanForeignScan  = brainfuck_fdw_rescan_foreign_scan;
 
     PG_RETURN_POINTER(routine);
 }

@@ -61,6 +61,10 @@ pgbf_machine_run_until(
     char stop_byte
 );
 
+/** Clears the machine state. Keeps the memory allocated for reuse. */
+void
+pgbf_machine_clear(pgbf_machine* machine);
+
 /** Frees the memory used by the machine. */
 void
 pgbf_machine_free(pgbf_machine* machine);

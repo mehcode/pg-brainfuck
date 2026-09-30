@@ -2,7 +2,6 @@
 #include "fmgr.h"
 
 #if PG_VERSION_NUM >= 160000
-// In Postgres 16+, the VARDATA/VARSIZE macros moved to the `varatt.h` header.
 #include "varatt.h"
 #endif
 

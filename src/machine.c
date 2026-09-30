@@ -29,6 +29,15 @@ pgbf_machine_free(pgbf_machine* machine) {
     }
 }
 
+void
+pgbf_machine_clear(pgbf_machine* machine) {
+    memset(machine->mem, 0, machine->mem_len);
+
+    machine->op         = 0;
+    machine->input_read = 0;
+    machine->ptr        = 0;
+}
+
 bool
 pgbf_machine_step(const pgbf_program* program, pgbf_machine* m, StringInfo output) {
     // <https://www.hevanet.com/cristofd/brainfuck/brainfuck.html>
