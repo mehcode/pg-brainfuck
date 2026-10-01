@@ -1,6 +1,7 @@
 # pg-brainfuck
 
-[![PGXN version](https://badge.fury.io/pg/brainfuck.svg)](https://badge.fury.io/pg/brainfuck)
+[![PGXN version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.pgxn.org%2Fdist%2Fbrainfuck.json&query=%24.releases.stable%5B0%5D.version&prefix=v&label=PGXN&style=for-the-badge)](https://pgxn.org/dist/brainfuck/)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/mehcode/pg-brainfuck/test.yml?branch=main&label=build&style=for-the-badge)](https://github.com/mehcode/pg-brainfuck/actions/workflows/test.yml)
 
 Extends PostgreSQL with [Brainfuck].
 
