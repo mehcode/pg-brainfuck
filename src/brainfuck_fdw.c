@@ -363,7 +363,7 @@ brainfuck_fdw_get_foreign_plan(
  */
 static void
 brainfuck_fdw_begin_foreign_scan(ForeignScanState* node, int eflags) {
-    if ((eflags & EXEC_FLAG_EXPLAIN_ONLY) != 0) {
+    if (((uint32_t)eflags & EXEC_FLAG_EXPLAIN_ONLY) != 0) {
         // Plain EXPLAIN (no ANALYZE) starts the executor but never runs.
         // The docs ask us to only do the minimum required.
         return;
@@ -501,6 +501,8 @@ PG_FUNCTION_INFO_V1(brainfuck_fdw_handler);
 
 Datum
 brainfuck_fdw_handler(PG_FUNCTION_ARGS) {
+    (void)fcinfo;
+
     FdwRoutine* routine = makeNode(FdwRoutine);
 
     routine->GetForeignRelSize         = brainfuck_fdw_get_foreign_rel_size;

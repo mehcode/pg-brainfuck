@@ -25,6 +25,7 @@ ExtraArgs:
   - -Wno-unsafe-buffer-usage
   - -Wno-implicit-void-ptr-cast
   - -Wno-padded
+  - -Wno-cast-align
 
 CheckOptions:
   bugprone-assert-side-effect.AssertMacros: Assert,AssertArg,AssertState

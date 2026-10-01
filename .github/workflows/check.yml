@@ -12,7 +12,7 @@ jobs:
   format:
     name: Format
     runs-on: ubuntu-latest
-    container: silkeh/clang:22@sha256:d8e4c9ca204d8941915c5d85f8f29164d6243e4698f4170b6f20c8cf14aaab71
+    container: ghcr.io/llvm/ci-ubuntu-26.04-format:e50507339d91@sha256:e055a23ffba4d896de36e9cbb458e8d98c8e2f34860e671bad6f55fad662e14c
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -22,18 +22,17 @@ jobs:
   tidy:
     name: Tidy
     runs-on: ubuntu-latest
-    container: silkeh/clang:22@sha256:d8e4c9ca204d8941915c5d85f8f29164d6243e4698f4170b6f20c8cf14aaab71
+    container: ghcr.io/llvm/ci-ubuntu-26.04-lint:e50507339d91@sha256:7bfa3379ff4547a5732b82bf70d8d8d8538497224017e911bd02acfc03fd408e
     env:
       PG_MAJOR: 19
-      DEBIAN_FRONTEND: noninteractive
     steps:
       # clang-tidy reads the Postgres headers and takes its flags from PGXS.
       - name: Install Postgres ${{ env.PG_MAJOR }} headers
         run: |
-          apt-get update
-          apt-get install -y --no-install-recommends bear gcc postgresql-common
-          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y -v "$PG_MAJOR"
-          apt-get install -y --no-install-recommends "postgresql-server-dev-$PG_MAJOR"
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends bear postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y -v "$PG_MAJOR"
+          sudo apt-get install -y --no-install-recommends "postgresql-server-dev-$PG_MAJOR"
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 

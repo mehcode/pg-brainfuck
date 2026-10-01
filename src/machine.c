@@ -15,10 +15,12 @@ pgbf_machine
 pgbf_machine_alloc(const char* input, size_t input_len) {
     uint8_t* mem = palloc0(PGBF_MACHINE_MEMORY_SIZE);
 
-    return (pgbf_machine){ .input     = input,
-                           .input_len = input_len,
-                           .mem       = mem,
-                           .mem_len   = PGBF_MACHINE_MEMORY_SIZE };
+    return (pgbf_machine){
+        .input     = input,
+        .input_len = input_len,
+        .mem       = mem,
+        .mem_len   = PGBF_MACHINE_MEMORY_SIZE,
+    };
 }
 
 void
