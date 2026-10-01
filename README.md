@@ -1,5 +1,7 @@
 # pg-brainfuck
 
+[![PGXN version](https://badge.fury.io/pg/brainfuck.svg)](https://badge.fury.io/pg/brainfuck)
+
 Extends PostgreSQL with [Brainfuck].
 
 - Provides the `brainfuck(input, program)` [function].
