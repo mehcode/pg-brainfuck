@@ -27,6 +27,11 @@ check-tidy:
     @mkdir -p build
     @make -s -C build -f ../Makefile tidy
 
+# Zip HEAD for release on PGXN.
+dist:
+    @mkdir -p build
+    @make -s -C build -f ../Makefile dist
+
 # Run the regression test suite for the specified PostgreSQL major version.
 test PG_MAJOR:
     @echo -e "\x1b[34m::\x1b[0m \x1b[1mTesting \`brainfuck\` against Postgres v{{ PG_MAJOR }} ...\x1b[0m"

@@ -2,6 +2,7 @@ srcdir := $(dir $(firstword $(MAKEFILE_LIST)))
 
 EXTENSION := brainfuck
 EXTVERSION := $(shell sed -n "s/^default_version *= *'\([^']*\)'.*/\1/p" $(srcdir)$(EXTENSION).control)
+DISTVERSION := $(shell sed -n 's/^  "version": *"\([^"]*\)".*/\1/p' $(srcdir)META.json)
 
 PG_CFLAGS = -std=c11 -Wpedantic -Wno-declaration-after-statement \
             -Wextra -Wshadow -Wformat=2 -Wold-style-definition \
@@ -69,3 +70,8 @@ tidy: compile_commands.json
 		--extra-arg=-DUSE_ASSERT_CHECKING \
 		--extra-arg=-Wno-unknown-warning-option \
 		$(sources)
+
+.PHONY: dist # Zip HEAD for release on PGXN.
+dist:
+	@git -C $(srcdir) archive --format zip --prefix=$(EXTENSION)-$(DISTVERSION)/ \
+		-o $(abspath $(EXTENSION)-$(DISTVERSION).zip) HEAD
