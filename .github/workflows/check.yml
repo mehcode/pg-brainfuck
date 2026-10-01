@@ -1,0 +1,41 @@
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    container: silkeh/clang:22@sha256:d8e4c9ca204d8941915c5d85f8f29164d6243e4698f4170b6f20c8cf14aaab71
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: clang-format
+        run: find src -name '*.[ch]' -exec clang-format --dry-run --Werror {} +
+
+  tidy:
+    name: Tidy
+    runs-on: ubuntu-latest
+    container: silkeh/clang:22@sha256:d8e4c9ca204d8941915c5d85f8f29164d6243e4698f4170b6f20c8cf14aaab71
+    env:
+      PG_MAJOR: 19
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      # clang-tidy reads the Postgres headers and takes its flags from PGXS.
+      - name: Install Postgres ${{ env.PG_MAJOR }} headers
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends bear gcc postgresql-common
+          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y -v "$PG_MAJOR"
+          apt-get install -y --no-install-recommends "postgresql-server-dev-$PG_MAJOR"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: clang-tidy
+        run: make -s tidy

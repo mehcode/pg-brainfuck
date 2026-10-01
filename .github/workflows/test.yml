@@ -1,0 +1,36 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: [14, 15, 16, 17, 18, 19]
+    name: Postgres ${{ matrix.pg }}
+    runs-on: ubuntu-latest
+    container: pgxn/pgxn-tools:1.7.1@sha256:53e79ef1c8b9a0ee88b51e89b36fd30c46c9f2326aec0cde1d7f66e47ad719ff
+    steps:
+      - name: Start Postgres ${{ matrix.pg }}
+        run: pg-start ${{ matrix.pg }}
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Test
+        id: test
+        run: pg-build-test
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: failure() && steps.test.outcome == 'failure'
+        with:
+          name: regression-pg${{ matrix.pg }}
+          path: |
+            regression.diffs
+            results
