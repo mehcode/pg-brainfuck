@@ -1,13 +1,13 @@
 {
   "name": "brainfuck",
-  "abstract": "A Brainfuck function, procedural language and FDW",
-  "description": "Provides the function brainfuck(input, program), the procedural language plbrainfuck, whose function bodies are Brainfuck, and the FDW brainfuck_fdw, whose foreign tables return a Brainfuck program's output one row per line.",
+  "abstract": "Extend PostgreSQL with Brainfuck",
+  "description": "Provides the brainfuck function, the plbrainfuck procedural language, and the brainfuck_fdw foreign data wrapper.",
   "version": "0.1.0",
   "maintainer": ["Ryan Leckey <leckey.ryan@gmail.com>"],
   "license": "postgresql",
   "provides": {
     "brainfuck": {
-      "abstract": "A Brainfuck function, procedural language and FDW",
+      "abstract": "Extend PostgreSQL with Brainfuck",
       "file": "sql/brainfuck.sql",
       "docfile": "README.md",
       "version": "0.1.0"
