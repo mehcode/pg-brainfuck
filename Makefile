@@ -8,8 +8,7 @@ PG_CFLAGS = -std=c11 -Wpedantic -Wno-declaration-after-statement \
             -Wconversion -Wno-sign-conversion -Wswitch-enum \
             -Wcast-qual -Wstrict-prototypes -Wmissing-declarations -Wundef \
             -Wwrite-strings -Wbad-function-cast -Wunused-macros \
-            -Wnull-dereference -Walloca -Wshift-overflow=2 -Wformat-overflow=2 \
-            -Wstringop-overflow=4 -Wformat-signedness
+            -Wnull-dereference -Walloca -Wformat-signedness
 
 # Compiled into PG_MODULE_MAGIC_EXT
 PG_CPPFLAGS = -DPGBF_VERSION='"$(EXTVERSION)"'
